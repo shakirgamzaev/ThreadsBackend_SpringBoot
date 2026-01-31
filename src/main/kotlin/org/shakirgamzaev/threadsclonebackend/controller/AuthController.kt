@@ -37,7 +37,8 @@ class AuthController(val db: DataBaseOps,
             userName = user.userName,
             email = user.email,
             imageURL = user.imageUrl,
-            fullName = user.fullName)
+            fullName = user.fullName,
+            bio = user.bio)
 
         val jwtToken = jwtService.createAndSignJWTToken(userDTO)
 

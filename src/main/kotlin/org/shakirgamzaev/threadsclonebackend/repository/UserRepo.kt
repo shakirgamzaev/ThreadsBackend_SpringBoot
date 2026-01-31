@@ -1,5 +1,6 @@
 package org.shakirgamzaev.threadsclonebackend.repository
 
+import org.shakirgamzaev.threadsclonebackend.model.SearchedUser
 import org.shakirgamzaev.threadsclonebackend.model.User
 import org.shakirgamzaev.threadsclonebackend.model.dto.UserDTO
 import org.springframework.jdbc.core.JdbcTemplate
@@ -17,7 +18,8 @@ class UserRepo(val jdbcTemplate: JdbcTemplate) {
             email = rs.getString("email"),
             passwordHash = rs.getString("password_hash"),
             imageUrl = rs.getString("image_url"),
-            fullName = rs.getString("full_name")
+            fullName = rs.getString("full_name"),
+            bio = rs.getString("bio")
         )
     }
 
@@ -27,14 +29,27 @@ class UserRepo(val jdbcTemplate: JdbcTemplate) {
             userName = rs.getString("user_name"),
             email = rs.getString("email"),
             imageURL = rs.getString("image_url"),
-            fullName = rs.getString("full_name")
+            fullName = rs.getString("full_name"),
+            bio = rs.getString("bio")
         )
     }
+
+    private val searchedUserMapper = RowMapper<SearchedUser> {rs, _ ->
+        SearchedUser(
+            id = rs.getLong("user_id"),
+            userName = rs.getString("user_name"),
+            imageURL = rs.getString("image_url"),
+            fullName = rs.getString("full_name"),
+            bio = rs.getString("bio"),
+            followersCount = rs.getInt("num_followers")
+        )
+    }
+
 
     //this function returns the userDTO, which contains all of user info, except the password hash, which the user
     // does not need.
     fun returnUserDTO(email: String): UserDTO {
-        val sql = "select user_id, user_name, email, image_url, full_name from dev_schema.users where email = ?"
+        val sql = "select user_id, user_name, email, image_url, full_name, bio from dev_schema.users where email = ?"
 
         val user = jdbcTemplate.queryForObject(sql, userDTOMapper, email)
 
@@ -64,7 +79,7 @@ class UserRepo(val jdbcTemplate: JdbcTemplate) {
         val sql = """insert into dev_schema.users 
     (user_name, email, 
      password_hash, image_url, full_name) values (?, ?, ?, ?, ?) returning user_id, user_name, email, image_url, 
-     full_name"""
+     full_name, bio"""
 
         val result = jdbcTemplate.queryForObject(sql, userDTOMapper,
             userName,
@@ -75,4 +90,46 @@ class UserRepo(val jdbcTemplate: JdbcTemplate) {
             )
         return result
     }
+
+
+        /**
+           returns all users from Users table, without filtering by user_name. So just dumps all users back to the
+           client. Used by search view
+         */
+    fun getAllUsers(): List<SearchedUser> {
+        val sql = """
+            select user_id,
+                   user_name,
+                   full_name,
+                   image_url,
+                   bio,
+                   count(f.follower_id) as num_followers
+            from dev_schema.users u
+            left join dev_schema.follows f on u.user_id = f.following_id
+            group by u.user_id
+        """
+        val users = jdbcTemplate.query(sql, searchedUserMapper)
+            return users
+    }
+
+
+
+    fun getUsersByFilter(filter: String): List<SearchedUser> {
+        val sql = """
+            select user_id,
+                   user_name,
+                   full_name,
+                   image_url,
+                   bio,
+                   count(f.follower_id) as num_followers
+            from dev_schema.users u
+            left join dev_schema.follows f on u.user_id = f.following_id
+            where user_name ilike ?
+            group by u.user_id
+        """
+        val users = jdbcTemplate.query(sql, searchedUserMapper, "%$filter%")
+        return users
+    }
+
+
 }

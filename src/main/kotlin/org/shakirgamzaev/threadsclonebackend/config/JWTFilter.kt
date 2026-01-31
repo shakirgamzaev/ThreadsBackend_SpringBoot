@@ -39,6 +39,7 @@ class JWTFilter (private val jwtService: JWTService) : OncePerRequestFilter() {
 
             // Sets authenticated user details in a security context
             if (SecurityContextHolder.getContext().authentication == null) {
+
                 val userName = claims.subject
                 val userClaims = UserClaims(id = id, userName = userName, email = email, fullName = fullName)
 
@@ -52,6 +53,7 @@ class JWTFilter (private val jwtService: JWTService) : OncePerRequestFilter() {
             filterChain.doFilter(request, response)
         }
         catch (e: io.jsonwebtoken.JwtException) {
+            println("JWTFILTEr: JwtException ")
             response.status = 401
             response.contentType = "application/json"
             response.writer.write("""{"status": 401, "message": "Token has expired"}""")
@@ -61,6 +63,7 @@ class JWTFilter (private val jwtService: JWTService) : OncePerRequestFilter() {
         catch (e: Exception) {
             // 2. Unexpected Filter Bugs (NullPointer, ClassCast)
             // It is safer to catch this here so the client gets a JSON response
+            println("JWTFilter: general exception")
             response.status = 500
             response.contentType = "application/json"
             response.writer.write("""{"status": 500, "message": "Internal Authentication Error"}""")

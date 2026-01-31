@@ -5,5 +5,6 @@ data class UserDTO(
     val userName: String,
     val email: String,
     val imageURL: String?,
-    val fullName: String
+    val fullName: String,
+    val bio: String
 )
