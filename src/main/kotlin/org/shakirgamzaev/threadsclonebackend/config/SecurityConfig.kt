@@ -20,6 +20,9 @@ class SecurityConfig {
         return JWTFilter(jwtService)
     }
 
+    /**
+     * Configures stateless JWT‑secured API endpoints
+     */
     @Bean
     fun securityFilterChain(http: HttpSecurity, jWTFilter: JWTFilter): SecurityFilterChain {
         http
@@ -37,8 +40,7 @@ class SecurityConfig {
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             }
             .addFilterBefore(
-                jWTFilter,
-                UsernamePasswordAuthenticationFilter::class.java)
+                jWTFilter, UsernamePasswordAuthenticationFilter::class.java)
 
         return http.build()
     }

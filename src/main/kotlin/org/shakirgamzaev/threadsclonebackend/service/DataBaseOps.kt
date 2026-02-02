@@ -11,13 +11,13 @@ import org.springframework.security.crypto.argon2.Argon2PasswordEncoder
 import org.springframework.stereotype.Service
 
 /*
-Utility class for fetching data from postresql database. This class simply calls methods on classes annotated with
-@Repository, and fetches whatever data is required.
+Utility class that handles all calls into Repository classes. If an api needs to talk to a database, whether to fetch
+ rows, or insert rows, this is the class through which they go through.
  */
 @Service
 class DataBaseOps(
     private val userRepo: UserRepo,
-    private val userThreadsRepo: ThreadsRepository
+    private val threadsRepo: ThreadsRepository
 ) {
 
     fun getUserDTO(email: String): UserDTO {
@@ -43,19 +43,42 @@ class DataBaseOps(
 
 
     fun fetchAllThreadsForUser(userClaims: UserClaims): List<UserThread> {
-        val threads = userThreadsRepo.fetchThreads(userClaims)
+        val threads = threadsRepo.fetchThreads(userClaims)
         return threads
     }
 
-    fun getAllSearchedUsers(): List<SearchedUser> {
-        return userRepo.getAllUsers()
+    fun getAllSearchedUsers(userId: Long): List<SearchedUser> {
+        return userRepo.getAllUsers(userId = userId)
     }
 
-    fun getSearchedUsersByFilter(filter: String): List<SearchedUser> {
-        return userRepo.getUsersByFilter(filter = filter)
+    fun getSearchedUsersByFilter(filter: String, userId: Long): List<SearchedUser> {
+        return userRepo.getUsersByFilter(filter = filter, userId = userId)
     }
+
+
+    fun followAnotherUser(currentUserId: Long, idOfUserToFollow: Long) {
+        userRepo.followAnotherUser(
+            currentUserId = currentUserId,
+            idOfUserToFollow = idOfUserToFollow
+        )
+    }
+
+
 
     fun postNewThread(userThread: UserThread) {
-        userThreadsRepo.insertNewThread(userThread)
+        threadsRepo.insertNewThread(userThread)
     }
+
+    fun updateUserProfile(
+        userId: Long,
+        fullName: String,
+        bio: String
+    ) {
+        userRepo.updateUserProfile(
+            userId = userId,
+            fullName = fullName,
+            bio = bio
+        )
+    }
+
 }

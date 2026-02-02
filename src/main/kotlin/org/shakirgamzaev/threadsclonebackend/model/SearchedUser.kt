@@ -6,5 +6,6 @@ data class SearchedUser(
     val imageURL: String?,
     val fullName: String,
     val bio: String,
-    val followersCount: Int
+    val followersCount: Int,
+    val isFollowed: Boolean
 )

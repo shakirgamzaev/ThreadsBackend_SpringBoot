@@ -8,10 +8,11 @@ import org.springframework.jdbc.core.RowMapper
 import org.springframework.stereotype.Repository
 
 @Repository
-class UserRepo(val jdbcTemplate: JdbcTemplate) {
+class UserRepo(private val jdbcTemplate: JdbcTemplate) {
 
     // Maps database row to user model
     private val userMapper = RowMapper<User> { rs, num ->
+        // Maps database row to complete user model
         User(
             id = rs.getLong("user_id"),
             userName = rs.getString("user_name"),
@@ -41,7 +42,8 @@ class UserRepo(val jdbcTemplate: JdbcTemplate) {
             imageURL = rs.getString("image_url"),
             fullName = rs.getString("full_name"),
             bio = rs.getString("bio"),
-            followersCount = rs.getInt("num_followers")
+            followersCount = rs.getInt("num_followers"),
+            isFollowed = rs.getBoolean("is_followed")
         )
     }
 
@@ -96,40 +98,74 @@ class UserRepo(val jdbcTemplate: JdbcTemplate) {
            returns all users from Users table, without filtering by user_name. So just dumps all users back to the
            client. Used by search view
          */
-    fun getAllUsers(): List<SearchedUser> {
+    fun getAllUsers(userId: Long): List<SearchedUser> {
         val sql = """
             select user_id,
                    user_name,
                    full_name,
                    image_url,
                    bio,
-                   count(f.follower_id) as num_followers
+                   count(f.follower_id) as num_followers,
+                   MAX(case when f.follower_id = ? then 1 else 0 end) as is_followed
             from dev_schema.users u
             left join dev_schema.follows f on u.user_id = f.following_id
             group by u.user_id
         """
-        val users = jdbcTemplate.query(sql, searchedUserMapper)
+        val users = jdbcTemplate.query(sql, searchedUserMapper, userId)
             return users
     }
 
 
 
-    fun getUsersByFilter(filter: String): List<SearchedUser> {
+    fun getUsersByFilter(filter: String, userId: Long): List<SearchedUser> {
         val sql = """
             select user_id,
                    user_name,
                    full_name,
                    image_url,
                    bio,
-                   count(f.follower_id) as num_followers
+                   count(f.follower_id) as num_followers,
+                   MAX(case when f.follower_id = ? then 1 else 0 end) as is_followed
             from dev_schema.users u
             left join dev_schema.follows f on u.user_id = f.following_id
             where user_name ilike ?
             group by u.user_id
         """
-        val users = jdbcTemplate.query(sql, searchedUserMapper, "%$filter%")
+        val users = jdbcTemplate.query(
+            sql,
+            searchedUserMapper,
+            userId,
+            "%$filter%")
         return users
     }
 
+
+    fun followAnotherUser(
+        currentUserId: Long,
+        idOfUserToFollow: Long
+    ) {
+        val sql = """
+            insert into dev_schema.follows (follower_id, following_id)
+            values (?, ?)
+            on conflict (follower_id, following_id) do nothing
+        """
+        jdbcTemplate.update(sql, currentUserId, idOfUserToFollow)
+
+    }
+
+
+    fun updateUserProfile(
+        userId: Long,
+        fullName: String,
+        bio: String
+    ) {
+        val sql = """
+            update dev_schema.users
+            set full_name = ?, bio = ?
+            where user_id = ?
+        """
+
+        jdbcTemplate.update(sql, fullName, bio, userId)
+    }
 
 }
