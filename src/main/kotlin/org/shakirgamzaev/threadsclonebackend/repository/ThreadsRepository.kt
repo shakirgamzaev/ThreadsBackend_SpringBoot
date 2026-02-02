@@ -11,16 +11,17 @@ import org.springframework.stereotype.Repository
 @Repository
 class ThreadsRepository(val jdbcTemplate: JdbcTemplate) {
 
+    // Maps database rows to thread objects
     private val threadsMapper = RowMapper{rs, _ ->
         UserThread(
             imageURL = rs.getString("image_url"),
             userName = rs.getString("user_name"),
             content = rs.getString("content"),
             postDate = rs.getTimestamp("dateposted"),
-            userId = rs.getLong("userid")
+            userId = rs.getLong("userid"),
+            id = rs.getLong("id")
         )
     }
-
 
 
 
@@ -29,6 +30,7 @@ class ThreadsRepository(val jdbcTemplate: JdbcTemplate) {
                     threads.content,
                     threads.dateposted,
                     threads.userid,
+                    threads.id,
                     u.user_name,
                     u.image_url
                  from dev_schema.threads
@@ -39,5 +41,13 @@ class ThreadsRepository(val jdbcTemplate: JdbcTemplate) {
 
         var threads = jdbcTemplate.query(sql, threadsMapper, userClaims.id)
         return threads
+    }
+
+
+    fun insertNewThread(userThread: UserThread) {
+        val sql = """insert into dev_schema.threads (dateposted, content, userid)
+            values (?, ?, ?)
+            """
+        val result = jdbcTemplate.update(sql, userThread.postDate, userThread.content, userThread.userId)
     }
 }

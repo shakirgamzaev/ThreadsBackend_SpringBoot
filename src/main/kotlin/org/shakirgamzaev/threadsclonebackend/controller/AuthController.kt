@@ -24,6 +24,7 @@ class AuthController(val db: DataBaseOps,
     @PostMapping("/login")
     fun login(@RequestBody loginInfo: EmailPasswordForm): ResponseEntity<*> {
         val user = db.findUserByEmail(loginInfo.email)
+        println(user)
         if (user == null) {
             return ResponseEntity.status(401).body(ApiError(401, "user email or password is incorrect"))
         }

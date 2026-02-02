@@ -12,7 +12,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component
 import org.springframework.web.filter.OncePerRequestFilter
 
-@Component
+
 class JWTFilter (private val jwtService: JWTService) : OncePerRequestFilter() {
 
     override fun doFilterInternal(
@@ -20,11 +20,14 @@ class JWTFilter (private val jwtService: JWTService) : OncePerRequestFilter() {
         response: HttpServletResponse,
         filterChain: FilterChain
     ) {
+        println("JWTFilter: Processing request ${request.method} ${request.requestURI}") // DEBUG PRINT
+
         val authHeader = request.getHeader("Authorization")
 
         //if the http request coming from client does not contain an Authorization: Bearer then hand off to spring
         // security filter chain, which will stop the request with an error.
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            println("no bearer token path")
             filterChain.doFilter(request, response)
             return
         }
@@ -33,6 +36,7 @@ class JWTFilter (private val jwtService: JWTService) : OncePerRequestFilter() {
         // Validates token; responds with error on expiration
         try {
             val claims = jwtService.validateToken(token)
+            println("token successfully authenticated")
             val id = (claims["id"] as Number).toLong()
             val email = claims["email"] as String
             val fullName = claims["fullName"] as String
@@ -54,6 +58,7 @@ class JWTFilter (private val jwtService: JWTService) : OncePerRequestFilter() {
         }
         catch (e: io.jsonwebtoken.JwtException) {
             println("JWTFILTEr: JwtException ")
+            println(e.message)
             response.status = 401
             response.contentType = "application/json"
             response.writer.write("""{"status": 401, "message": "Token has expired"}""")

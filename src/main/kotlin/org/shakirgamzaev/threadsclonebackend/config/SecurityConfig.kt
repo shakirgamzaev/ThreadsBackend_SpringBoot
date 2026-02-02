@@ -1,17 +1,24 @@
 package org.shakirgamzaev.threadsclonebackend.config
 
+import org.shakirgamzaev.threadsclonebackend.service.JWTService
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.web.SecurityFilterChain
+import org.springframework.security.web.access.intercept.AuthorizationFilter
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 import org.springframework.security.web.savedrequest.NullRequestCache
 
 @Configuration
 @EnableWebSecurity
 class SecurityConfig {
+
+    @Bean
+    fun jwtFilter(jwtService: JWTService): JWTFilter {
+        return JWTFilter(jwtService)
+    }
 
     @Bean
     fun securityFilterChain(http: HttpSecurity, jWTFilter: JWTFilter): SecurityFilterChain {
@@ -30,7 +37,8 @@ class SecurityConfig {
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             }
             .addFilterBefore(
-                jWTFilter, UsernamePasswordAuthenticationFilter::class.java)
+                jWTFilter,
+                UsernamePasswordAuthenticationFilter::class.java)
 
         return http.build()
     }

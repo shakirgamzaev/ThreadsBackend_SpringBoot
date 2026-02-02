@@ -6,4 +6,4 @@ data class UserClaims(
     val userName: String,
     val email: String,
     val fullName: String
-    )
+)

@@ -54,4 +54,8 @@ class DataBaseOps(
     fun getSearchedUsersByFilter(filter: String): List<SearchedUser> {
         return userRepo.getUsersByFilter(filter = filter)
     }
+
+    fun postNewThread(userThread: UserThread) {
+        userThreadsRepo.insertNewThread(userThread)
+    }
 }

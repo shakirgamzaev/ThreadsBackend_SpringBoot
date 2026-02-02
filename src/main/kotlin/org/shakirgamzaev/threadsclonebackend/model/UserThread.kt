@@ -12,9 +12,10 @@ import java.util.Date
     var userId: Int64
  */
 data class UserThread (
-    val imageURL: String?,
+    val imageURL: String?, //image url is retrieved by a join from users table
     val userName: String,
     val content: String,
     var postDate: Date,
-    var userId: Long
+    var userId: Long,
+    var id: Long? //the actual id of a thread
 )
