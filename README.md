@@ -1,6 +1,6 @@
 # Threads Clone Backend
 
-A robust RESTful API backend for a social media application inspired by Threads. This project is built with **Kotlin** and **Spring Boot**, featuring secure authentication and efficient data handling.
+A robust RESTful API backend for a social media application inspired by Threads. This project is built with **Kotlin** and **Spring Boot**, featuring secure authentication and efficient data handling. Link to SwiftUI front end of this app is here: https://github.com/shakirgamzaev/ThreadsClone.git
 
 ## 🚀 Overview
 
