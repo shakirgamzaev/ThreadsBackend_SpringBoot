@@ -56,10 +56,15 @@ class DataBaseOps(
     }
 
 
-    fun followAnotherUser(currentUserId: Long, idOfUserToFollow: Long) {
+    fun followAnotherUser(
+        currentUserId: Long,
+        idOfUserToFollow: Long,
+        shouldFollow: Boolean
+    ) {
         userRepo.followAnotherUser(
             currentUserId = currentUserId,
-            idOfUserToFollow = idOfUserToFollow
+            idOfUserToFollow = idOfUserToFollow,
+            shouldFollow = shouldFollow
         )
     }
 

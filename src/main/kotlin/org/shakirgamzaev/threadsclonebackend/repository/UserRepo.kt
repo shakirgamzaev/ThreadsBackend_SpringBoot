@@ -142,13 +142,19 @@ class UserRepo(private val jdbcTemplate: JdbcTemplate) {
 
     fun followAnotherUser(
         currentUserId: Long,
-        idOfUserToFollow: Long
+        idOfUserToFollow: Long,
+        shouldFollow: Boolean
     ) {
-        val sql = """
-            insert into dev_schema.follows (follower_id, following_id)
+        var sql = """"""
+        if (shouldFollow) {
+            sql = """insert into dev_schema.follows (follower_id, following_id)
             values (?, ?)
-            on conflict (follower_id, following_id) do nothing
-        """
+            on conflict (follower_id, following_id) do nothing"""
+        }
+        else {
+            sql = """ delete from dev_schema.follows where follower_id = ? and following_id = ? """
+        }
+
         jdbcTemplate.update(sql, currentUserId, idOfUserToFollow)
 
     }

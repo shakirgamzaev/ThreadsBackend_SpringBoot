@@ -35,18 +35,19 @@ class UsersController(
     }
 
 
-
-    @PostMapping("/follow/{id}")
+    //follows or unfollows the tagetUser, depending on whether shouldFollow  is set to true
+    @PostMapping("/follow/{id}/{shouldFollow}")
     fun followUser(
-        @AuthenticationPrincipal userClaims: UserClaims, @PathVariable id: Long
+        @AuthenticationPrincipal userClaims: UserClaims, @PathVariable id: Long,
+        @PathVariable shouldFollow: Boolean
     ): ResponseEntity<Unit> {
         println("allUsers/follow api is called")
 
         // userClaims.id is the person DOING the following
         // id (from path) is the person BEING followed
-        dataBaseOps.followAnotherUser(currentUserId = userClaims.id, idOfUserToFollow = id)
-
+        dataBaseOps.followAnotherUser(currentUserId = userClaims.id, idOfUserToFollow = id, shouldFollow = shouldFollow)
         return ResponseEntity.ok().build()
+
     }
 
 
@@ -61,4 +62,6 @@ class UsersController(
 
         return ResponseEntity.ok().build()
     }
+
+
 }
